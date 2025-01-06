@@ -224,8 +224,8 @@ const AnimatedCanvas = () => {
           height: '100px',
           position: 'absolute',
           zIndex: 1000,
-          right: '0',
-          bottom: '0',
+          right: '10px',
+          bottom: '10px',
         }}
       >
         <iframe
@@ -233,10 +233,10 @@ const AnimatedCanvas = () => {
           height='100'
           src='https://www.youtube.com/embed/-xE1Vj7rBEk?si=vCOnlsMZhi9335kJ&autoplay=1&mute=0'
           title='YouTube video player'
-          frameborder='0'
+          frameBorder='0'
           allow='accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share'
-          referrerpolicy='strict-origin-when-cross-origin'
-          allowfullscreen
+          referrerPolicy='strict-origin-when-cross-origin'
+          allowFullScreen
         ></iframe>
       </div>
       <canvas
