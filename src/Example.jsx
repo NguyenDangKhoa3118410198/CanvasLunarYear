@@ -10,7 +10,7 @@ const AnimatedCanvas = () => {
   const [amount, setAmount] = useState(null);
 
   const popupSound = useMemo(() => {
-    const sound = new Audio('src/assets/firework.mp3');
+    const sound = new Audio('/assets/firework.mp3');
     sound.volume = 0.2;
     return sound;
   }, []);
@@ -66,16 +66,16 @@ const AnimatedCanvas = () => {
 
     const envelopes = [];
     const images = [
-      'src/assets/lixi1.png',
-      'src/assets/lixi2.png',
-      'src/assets/lixi3.png',
-      'src/assets/lixi4.png',
-      'src/assets/lixi5.png',
-      'src/assets/lixi6.png',
-      'src/assets/lixi7.png',
-      'src/assets/lixi8.png',
-      'src/assets/lixi9.png',
-      'src/assets/lixi10.png',
+      '/assets/lixi1.png',
+      '/assets/lixi2.png',
+      '/assets/lixi3.png',
+      '/assets/lixi4.png',
+      '/assets/lixi5.png',
+      '/assets/lixi6.png',
+      '/assets/lixi7.png',
+      '/assets/lixi8.png',
+      '/assets/lixi9.png',
+      '/assets/lixi10.png',
     ]; // Danh sách hình ảnh
 
     const loadedImages = images.map((src) => {
