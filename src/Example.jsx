@@ -1,4 +1,4 @@
-import { useRef, useState, useEffect } from 'react';
+import { useRef, useState, useEffect, useMemo } from 'react';
 import confetti from 'canvas-confetti';
 
 const AnimatedCanvas = () => {
@@ -8,8 +8,12 @@ const AnimatedCanvas = () => {
   const [isPopupVisible, setPopupVisible] = useState(false);
   const [isCanvasClickable, setCanvasClickable] = useState(true);
   const [amount, setAmount] = useState(null);
-  const popupSound = new Audio('src/assets/firework.mp3');
-  popupSound.volume = 0.2;
+
+  const popupSound = useMemo(() => {
+    const sound = new Audio('src/assets/firework.mp3');
+    sound.volume = 0.2;
+    return sound;
+  }, []);
 
   useEffect(() => {
     const backgroundCanvas = backgroundCanvasRef.current;
@@ -60,7 +64,6 @@ const AnimatedCanvas = () => {
     canvas.width = window.innerWidth;
     canvas.height = window.innerHeight;
 
-    const numEnvelopes = 10;
     const envelopes = [];
     const images = [
       'src/assets/lixi1.png',
@@ -82,7 +85,6 @@ const AnimatedCanvas = () => {
     });
 
     const createEnvelopes = () => {
-      // Bước 1: Tạo ít nhất một bao lì xì cho mỗi hình ảnh
       images.forEach((src, index) => {
         envelopes.push({
           x: Math.random() * canvas.width,
@@ -96,21 +98,6 @@ const AnimatedCanvas = () => {
           image: loadedImages[index],
         });
       });
-
-      // Bước 2: Tạo thêm các bao lì xì để đạt tổng số `numEnvelopes`
-      for (let i = envelopes.length; i < numEnvelopes; i++) {
-        envelopes.push({
-          x: Math.random() * canvas.width,
-          y: Math.random() * canvas.height,
-          width: 100,
-          height: 210,
-          radius: 8,
-          vx: Math.floor(Math.random() * 2) + 1,
-          vy: Math.floor(Math.random() * 2) + 1,
-          selected: false,
-          image: loadedImages[Math.floor(Math.random() * loadedImages.length)], // Chọn hình ảnh ngẫu nhiên
-        });
-      }
     };
 
     const updateEnvelopes = () => {
@@ -154,7 +141,7 @@ const AnimatedCanvas = () => {
       const mouseX = event.clientX - rect.left;
       const mouseY = event.clientY - rect.top;
 
-      envelopes.forEach((envelope, index) => {
+      envelopes.forEach((envelope) => {
         if (
           mouseX >= envelope.x &&
           mouseX <= envelope.x + envelope.width &&
@@ -174,8 +161,6 @@ const AnimatedCanvas = () => {
             setPopupVisible(true);
             setCanvasClickable(false);
             popupSound.play();
-
-            envelopes.splice(index, 1);
 
             confetti({
               particleCount: 100,
@@ -202,7 +187,7 @@ const AnimatedCanvas = () => {
     return () => {
       canvas.removeEventListener('click', handleCanvasClick);
     };
-  }, [selectedEnvelope, isCanvasClickable, amount]);
+  }, [selectedEnvelope, isCanvasClickable, amount, popupSound]);
 
   const closePopup = () => {
     setPopupVisible(false);
