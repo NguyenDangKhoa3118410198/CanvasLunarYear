@@ -8,6 +8,7 @@ const AnimatedCanvas = () => {
   const [isPopupVisible, setPopupVisible] = useState(false);
   const [isCanvasClickable, setCanvasClickable] = useState(true);
   const [amount, setAmount] = useState(null);
+  const envelopesRef = useRef([]);
 
   const popupSound = useMemo(() => {
     const sound = new Audio('/assets/firework.mp3');
@@ -41,7 +42,7 @@ const AnimatedCanvas = () => {
       stars.forEach((star) => {
         star.opacity += star.speed;
         if (star.opacity >= 1 || star.opacity <= 0) {
-          star.speed = -star.speed; // Đảo chiều hiệu ứng nhấp nháy
+          star.speed = -star.speed;
         }
 
         backgroundCtx.beginPath();
@@ -64,7 +65,6 @@ const AnimatedCanvas = () => {
     canvas.width = window.innerWidth;
     canvas.height = window.innerHeight;
 
-    const envelopes = [];
     const images = [
       '/assets/lixi1.png',
       '/assets/lixi2.png',
@@ -76,7 +76,7 @@ const AnimatedCanvas = () => {
       '/assets/lixi8.png',
       '/assets/lixi9.png',
       '/assets/lixi10.png',
-    ]; // Danh sách hình ảnh
+    ];
 
     const loadedImages = images.map((src) => {
       const img = new Image();
@@ -84,24 +84,28 @@ const AnimatedCanvas = () => {
       return img;
     });
 
-    const createEnvelopes = () => {
-      images.forEach((src, index) => {
-        envelopes.push({
-          x: Math.random() * canvas.width,
-          y: Math.random() * canvas.height,
-          width: 100,
-          height: 210,
-          radius: 8,
-          vx: Math.floor(Math.random() * 2) + 1,
-          vy: Math.floor(Math.random() * 2) + 1,
-          selected: false,
-          image: loadedImages[index],
+    if (envelopesRef.current.length === 0) {
+      const createEnvelopes = () => {
+        images.forEach((src, index) => {
+          envelopesRef.current.push({
+            x: Math.random() * canvas.width,
+            y: Math.random() * canvas.height,
+            width: 100,
+            height: 210,
+            radius: 8,
+            vx: Math.floor(Math.random() * 2) + 1,
+            vy: Math.floor(Math.random() * 2) + 1,
+            selected: false,
+            image: loadedImages[index],
+          });
         });
-      });
-    };
+      };
+  
+      createEnvelopes();
+    }
 
     const updateEnvelopes = () => {
-      envelopes.forEach((envelope) => {
+      envelopesRef.current.forEach((envelope) => {
         envelope.x += envelope.vx;
         envelope.y += envelope.vy;
 
@@ -123,7 +127,7 @@ const AnimatedCanvas = () => {
     };
 
     const drawEnvelopes = () => {
-      envelopes.forEach((envelope) => {
+      envelopesRef.current.forEach((envelope) => {
         ctx.drawImage(
           envelope.image,
           envelope.x,
@@ -134,45 +138,6 @@ const AnimatedCanvas = () => {
       });
     };
 
-    const handleCanvasClick = (event) => {
-      if (!isCanvasClickable) return;
-
-      const rect = canvas.getBoundingClientRect();
-      const mouseX = event.clientX - rect.left;
-      const mouseY = event.clientY - rect.top;
-
-      envelopes.forEach((envelope) => {
-        if (
-          mouseX >= envelope.x &&
-          mouseX <= envelope.x + envelope.width &&
-          mouseY >= envelope.y &&
-          mouseY <= envelope.y + envelope.height
-        ) {
-          if (selectedEnvelope === envelope) {
-            setPopupVisible(false);
-            setSelectedEnvelope(null);
-            setCanvasClickable(true);
-          } else {
-            const randomAmount = [10000, 20000, 50000, 100000];
-            const randomIndex = Math.floor(Math.random() * randomAmount.length);
-            setAmount(randomAmount[randomIndex]);
-
-            setSelectedEnvelope(envelope);
-            setPopupVisible(true);
-            setCanvasClickable(false);
-            popupSound.play();
-
-            confetti({
-              particleCount: 100,
-              spread: 70,
-              origin: { x: 0.5, y: 0.5 },
-              colors: ['#ff0000', '#ffd700', '#ff4500'],
-            });
-          }
-        }
-      });
-    };
-
     const animate = () => {
       ctx.clearRect(0, 0, canvas.width, canvas.height);
       updateEnvelopes();
@@ -180,14 +145,60 @@ const AnimatedCanvas = () => {
       requestAnimationFrame(animate);
     };
 
-    createEnvelopes();
-    canvas.addEventListener('click', handleCanvasClick);
     animate();
+  }, []);
 
+  const handleCanvasClick = (event) => {
+    if (!isCanvasClickable) return;
+
+    const canvas = canvasRef.current;
+    const rect = canvas.getBoundingClientRect();
+    const mouseX = event.clientX - rect.left;
+    const mouseY = event.clientY - rect.top;
+
+    for (let i = 0; i < envelopesRef.current.length; i++) {
+      const envelope = envelopesRef.current[i];
+      if (
+        mouseX >= envelope.x &&
+        mouseX <= envelope.x + envelope.width &&
+        mouseY >= envelope.y &&
+        mouseY <= envelope.y + envelope.height
+      ) {
+        if (selectedEnvelope === envelope) {
+          setPopupVisible(false);
+          setSelectedEnvelope(null);
+          setCanvasClickable(true);
+        } else {
+          const randomAmount = [10000, 20000, 50000, 100000];
+          const randomIndex = Math.floor(Math.random() * randomAmount.length);
+          setAmount(randomAmount[randomIndex]);
+
+          setSelectedEnvelope(envelope);
+          setPopupVisible(true);
+          setCanvasClickable(false);
+          popupSound.play();
+
+          confetti({
+            particleCount: 100,
+            spread: 70,
+            origin: { x: 0.5, y: 0.5 },
+            colors: ['#ff0000', '#ffd700', '#ff4500'],
+          });
+
+          envelopesRef.current.splice(i, 1);
+        }
+        break;
+      }
+    }
+  };
+
+  useEffect(() => {
+    const canvas = canvasRef.current;
+    canvas.addEventListener('click', handleCanvasClick);
     return () => {
       canvas.removeEventListener('click', handleCanvasClick);
     };
-  }, [selectedEnvelope, isCanvasClickable, amount, popupSound]);
+  }, [selectedEnvelope, isCanvasClickable]);
 
   const closePopup = () => {
     setPopupVisible(false);
@@ -264,6 +275,7 @@ const AnimatedCanvas = () => {
     </>
   );
 };
+
 const overlayStyle = {
   position: 'fixed',
   top: 0,
